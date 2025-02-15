@@ -2,8 +2,18 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <fstream>
+#include <algorithm> // for std::find
+#include <functional> // for std::hash
+#include <cstdlib> // for system("cls") or system("clear")
 
 using namespace std;
+
+// Function to hash passwords (basic security)
+size_t hashPassword(const string& password) {
+    hash<string> hasher;
+    return hasher(password);
+}
 
 // Function to display the available items
 void displayItems(const map<string, double>& items) {
@@ -11,6 +21,15 @@ void displayItems(const map<string, double>& items) {
     for (const auto& item : items) {
         cout << item.first << " - $" << item.second << endl;
     }
+}
+
+// Function to clear the screen
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
 }
 
 int main() {
@@ -37,6 +56,7 @@ int main() {
     cin >> storedUsername;
     cout << "Enter a password: ";
     cin >> storedPassword;
+    size_t hashedPassword = hashPassword(storedPassword); // Hash the password
     cout << "Account created successfully!\n\n";
 
     // Step 2: Login
@@ -48,7 +68,7 @@ int main() {
         cout << "Enter your password: ";
         cin >> password;
 
-        if (username == storedUsername && password == storedPassword) {
+        if (username == storedUsername && hashPassword(password) == hashedPassword) {
             loggedIn = true;
             cout << "Login successful!\n";
         } else {
@@ -72,18 +92,21 @@ int main() {
         cout << "\n1. Display Items\n";
         cout << "2. Search Item\n";
         cout << "3. Add Item to Cart\n";
-        cout << "4. View Cart\n";
-        cout << "5. Checkout\n";
-        cout << "6. Exit\n";
+        cout << "4. Remove Item from Cart\n";
+        cout << "5. View Cart\n";
+        cout << "6. Checkout\n";
+        cout << "7. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
         switch (choice) {
             case '1': {
+                clearScreen();
                 displayItems(items);
                 break;
             }
             case '2': {
+                clearScreen();
                 string searchItem;
                 cout << "Enter the item name to search: ";
                 cin.ignore();
@@ -97,14 +120,16 @@ int main() {
                 break;
             }
             case '3': {
+                clearScreen();
                 string itemToAdd;
                 cout << "Enter the item name to add to cart: ";
                 cin.ignore();
                 getline(cin, itemToAdd);
 
-                if (items.find(itemToAdd) != items.end()) {
+                auto it = items.find(itemToAdd);
+                if (it != items.end()) {
                     cart.push_back(itemToAdd);
-                    totalAmount += items[itemToAdd];
+                    totalAmount += it->second;
                     cout << itemToAdd << " added to cart.\n";
                 } else {
                     cout << "Item not found.\n";
@@ -112,6 +137,28 @@ int main() {
                 break;
             }
             case '4': {
+                clearScreen();
+                if (cart.empty()) {
+                    cout << "Your cart is empty.\n";
+                } else {
+                    string itemToRemove;
+                    cout << "Enter the item name to remove from cart: ";
+                    cin.ignore();
+                    getline(cin, itemToRemove);
+
+                    auto it = find(cart.begin(), cart.end(), itemToRemove);
+                    if (it != cart.end()) {
+                        totalAmount -= items[itemToRemove];
+                        cart.erase(it);
+                        cout << itemToRemove << " removed from cart.\n";
+                    } else {
+                        cout << "Item not found in cart.\n";
+                    }
+                }
+                break;
+            }
+            case '5': {
+                clearScreen();
                 cout << "Items in your cart:\n";
                 for (const string& item : cart) {
                     cout << item << " - $" << items[item] << endl;
@@ -119,7 +166,8 @@ int main() {
                 cout << "Total Amount: $" << totalAmount << endl;
                 break;
             }
-            case '5': {
+            case '6': {
+                clearScreen();
                 cout << "Checking out...\n";
                 cout << "Items in your cart:\n";
                 for (const string& item : cart) {
@@ -131,11 +179,31 @@ int main() {
                 cout << "City: " << city << endl;
                 cout << "House Address: " << houseAddress << endl;
                 cout << "Thank you for shopping with us!\n";
+
+                // Save purchase history to users.txt
+                ofstream userFile("users.txt", ios::app);
+                if (userFile.is_open()) {
+                    static int userCounter = 1; // Counter to track user numbers
+                    userFile << "User " << userCounter++ << ":\n";
+                    userFile << "Username: " << storedUsername << "\n";
+                    userFile << "Country: " << country << "\n";
+                    userFile << "City: " << city << "\n";
+                    userFile << "Address: " << houseAddress << "\n";
+                    userFile << "Items Purchased:\n";
+                    for (const string& item : cart) {
+                        userFile << "  - " << item << " - $" << items[item] << "\n";
+                    }
+                    userFile << "Total Amount: $" << totalAmount << "\n\n";
+                    userFile.close();
+                } else {
+                    cout << "Unable to save user data.\n";
+                }
+
                 cart.clear();
                 totalAmount = 0.0;
                 break;
             }
-            case '6': {
+            case '7': {
                 cout << "Exiting the application. Goodbye!\n";
                 break;
             }
@@ -144,7 +212,7 @@ int main() {
                 break;
             }
         }
-    } while (choice != '6');
+    } while (choice != '7');
 
     return 0;
 }
