@@ -3,13 +3,13 @@
 #include <map>
 #include <vector>
 #include <fstream>
-#include <algorithm> // for std::find
-#include <functional> // for std::hash
-#include <cstdlib> // for system("cls") or system("clear")
+#include <algorithm>
+#include <iomanip>
+#include <unordered_set>
 
 using namespace std;
 
-// Function to hash passwords (basic security)
+// Function to hash passwords (basic security, can be improved with bcrypt/OpenSSL)
 size_t hashPassword(const string& password) {
     hash<string> hasher;
     return hasher(password);
@@ -17,23 +17,15 @@ size_t hashPassword(const string& password) {
 
 // Function to display the available items
 void displayItems(const map<string, double>& items) {
-    cout << "Available Items:\n";
+    cout << "\nAvailable Items:\n";
+    cout << left << setw(15) << "Item" << "Price ($)\n";
+    cout << "-------------------------\n";
     for (const auto& item : items) {
-        cout << item.first << " - $" << item.second << endl;
+        cout << left << setw(15) << item.first << fixed << setprecision(2) << item.second << endl;
     }
 }
 
-// Function to clear the screen
-void clearScreen() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-}
-
 int main() {
-    // Predefined items with their prices
     map<string, double> items = {
         {"Laptop", 1200.00},
         {"Smartphone", 800.00},
@@ -42,51 +34,44 @@ int main() {
         {"Smartwatch", 250.00}
     };
 
-    // User credentials
     string storedUsername, storedPassword;
     string username, password;
     string country, city, houseAddress;
-    vector<string> cart;
+    map<string, int> cart; // Stores item name and quantity
     double totalAmount = 0.0;
+    static int userCounter = 1; // Counter to track user numbers
 
-    // Step 1: Create a username and password
     cout << "Welcome to the Shopping Application!\n";
     cout << "Create your account:\n";
     cout << "Enter a username: ";
-    cin >> storedUsername;
+    getline(cin, storedUsername);
     cout << "Enter a password: ";
-    cin >> storedPassword;
-    size_t hashedPassword = hashPassword(storedPassword); // Hash the password
+    getline(cin, storedPassword);
+    size_t hashedPassword = hashPassword(storedPassword);
     cout << "Account created successfully!\n\n";
 
-    // Step 2: Login
+    // Login loop
     bool loggedIn = false;
     while (!loggedIn) {
         cout << "Login to your account:\n";
         cout << "Enter your username: ";
-        cin >> username;
+        getline(cin, username);
         cout << "Enter your password: ";
-        cin >> password;
+        getline(cin, password);
 
         if (username == storedUsername && hashPassword(password) == hashedPassword) {
             loggedIn = true;
             cout << "Login successful!\n";
         } else {
-            cout << "Incorrect username or password. Please try again.\n";
+            cout << "Incorrect username or password. Try again.\n";
         }
     }
 
-    // Step 3: Set location details
-    cout << "\nPlease enter your location details:\n";
-    cout << "Country: ";
-    cin.ignore(); // To ignore the newline character left by previous input
-    getline(cin, country);
-    cout << "City: ";
-    getline(cin, city);
-    cout << "House Address: ";
-    getline(cin, houseAddress);
+    cout << "\nEnter your shipping details:\n";
+    cout << "Country: "; getline(cin, country);
+    cout << "City: "; getline(cin, city);
+    cout << "House Address: "; getline(cin, houseAddress);
 
-    // Shopping loop
     char choice;
     do {
         cout << "\n1. Display Items\n";
@@ -98,119 +83,112 @@ int main() {
         cout << "7. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
+        cin.ignore(); // Prevents input issues
 
         switch (choice) {
-            case '1': {
-                clearScreen();
+            case '1':
                 displayItems(items);
                 break;
-            }
             case '2': {
-                clearScreen();
                 string searchItem;
-                cout << "Enter the item name to search: ";
-                cin.ignore();
+                cout << "Enter item name: ";
                 getline(cin, searchItem);
-
-                if (items.find(searchItem) != items.end()) {
-                    cout << searchItem << " is available for $" << items[searchItem] << endl;
+                auto it = items.find(searchItem);
+                if (it != items.end()) {
+                    cout << searchItem << " is available for $" << fixed << setprecision(2) << it->second << endl;
                 } else {
                     cout << "Item not found.\n";
                 }
                 break;
             }
             case '3': {
-                clearScreen();
                 string itemToAdd;
-                cout << "Enter the item name to add to cart: ";
-                cin.ignore();
+                int quantity;
+                cout << "Enter item name: ";
                 getline(cin, itemToAdd);
-
-                auto it = items.find(itemToAdd);
-                if (it != items.end()) {
-                    cart.push_back(itemToAdd);
-                    totalAmount += it->second;
-                    cout << itemToAdd << " added to cart.\n";
+                if (items.find(itemToAdd) != items.end()) {
+                    cout << "Enter quantity: ";
+                    cin >> quantity;
+                    cin.ignore(); // Clear input buffer
+                    if (quantity > 0) {
+                        cart[itemToAdd] += quantity; // Add or update quantity
+                        totalAmount += items[itemToAdd] * quantity;
+                        cout << quantity << " " << itemToAdd << "(s) added to cart.\n";
+                    } else {
+                        cout << "Quantity must be greater than 0.\n";
+                    }
                 } else {
                     cout << "Item not found.\n";
                 }
                 break;
             }
             case '4': {
-                clearScreen();
-                if (cart.empty()) {
-                    cout << "Your cart is empty.\n";
-                } else {
-                    string itemToRemove;
-                    cout << "Enter the item name to remove from cart: ";
-                    cin.ignore();
-                    getline(cin, itemToRemove);
-
-                    auto it = find(cart.begin(), cart.end(), itemToRemove);
-                    if (it != cart.end()) {
-                        totalAmount -= items[itemToRemove];
-                        cart.erase(it);
-                        cout << itemToRemove << " removed from cart.\n";
+                string itemToRemove;
+                int quantity;
+                cout << "Enter item name: ";
+                getline(cin, itemToRemove);
+                if (cart.find(itemToRemove) != cart.end()) {
+                    cout << "Enter quantity to remove: ";
+                    cin >> quantity;
+                    cin.ignore(); // Clear input buffer
+                    if (quantity > 0 && quantity <= cart[itemToRemove]) {
+                        cart[itemToRemove] -= quantity;
+                        totalAmount -= items[itemToRemove] * quantity;
+                        if (cart[itemToRemove] == 0) {
+                            cart.erase(itemToRemove); // Remove item if quantity is 0
+                        }
+                        cout << quantity << " " << itemToRemove << "(s) removed from cart.\n";
                     } else {
-                        cout << "Item not found in cart.\n";
+                        cout << "Invalid quantity.\n";
                     }
+                } else {
+                    cout << "Item not found in cart.\n";
                 }
                 break;
             }
-            case '5': {
-                clearScreen();
-                cout << "Items in your cart:\n";
-                for (const string& item : cart) {
-                    cout << item << " - $" << items[item] << endl;
+            case '5':
+                cout << "\nYour Cart:\n";
+                for (const auto& item : cart) {
+                    cout << "- " << item.first << " (Quantity: " << item.second << ") - $" 
+                         << fixed << setprecision(2) << items[item.first] * item.second << "\n";
                 }
-                cout << "Total Amount: $" << totalAmount << endl;
+                cout << "Total: $" << fixed << setprecision(2) << totalAmount << "\n";
                 break;
-            }
             case '6': {
-                clearScreen();
-                cout << "Checking out...\n";
-                cout << "Items in your cart:\n";
-                for (const string& item : cart) {
-                    cout << item << " - $" << items[item] << endl;
+                if (cart.empty()) {
+                    cout << "Your cart is empty. Add items before checkout.\n";
+                    break;
                 }
-                cout << "Total Amount: $" << totalAmount << endl;
-                cout << "Shipping to:\n";
-                cout << "Country: " << country << endl;
-                cout << "City: " << city << endl;
-                cout << "House Address: " << houseAddress << endl;
-                cout << "Thank you for shopping with us!\n";
-
-                // Save purchase history to users.txt
+                cout << "\nProcessing checkout...\n";
                 ofstream userFile("users.txt", ios::app);
                 if (userFile.is_open()) {
-                    static int userCounter = 1; // Counter to track user numbers
-                    userFile << "User " << userCounter++ << ":\n";
+                    userFile << "User " << userCounter++ << ":\n";                                  
                     userFile << "Username: " << storedUsername << "\n";
-                    userFile << "Country: " << country << "\n";
-                    userFile << "City: " << city << "\n";
-                    userFile << "Address: " << houseAddress << "\n";
-                    userFile << "Items Purchased:\n";
-                    for (const string& item : cart) {
-                        userFile << "  - " << item << " - $" << items[item] << "\n";
+                    userFile << "Shipping: " << country << ", " << city << ", " << houseAddress << "\n";
+                    userFile << "Items:\n";
+                    for (const auto& item : cart) {
+                        userFile << "  - " << item.first << " (Quantity: " << item.second << ") - $" 
+                                 << items[item.first] * item.second << "\n";
                     }
-                    userFile << "Total Amount: $" << totalAmount << "\n\n";
+                    userFile << "Total: $" << totalAmount << "\n\n";
                     userFile.close();
-                } else {
-                    cout << "Unable to save user data.\n";
                 }
-
+                cout << "Order placed successfully!\n";
+                cout << "Shipping Details:\n";
+                cout << "Username: " << storedUsername << "\n";
+                cout << "Country: " << country << "\n";
+                cout << "City: " << city << "\n";
+                cout << "Address: " << houseAddress << "\n";
+                cout << "Total Amount: $" << totalAmount << "\n";
                 cart.clear();
                 totalAmount = 0.0;
                 break;
             }
-            case '7': {
-                cout << "Exiting the application. Goodbye!\n";
+            case '7':
+                cout << "Exiting. Goodbye!\n";
                 break;
-            }
-            default: {
-                cout << "Invalid choice. Please try again.\n";
-                break;
-            }
+            default:
+                cout << "Invalid choice. Try again.\n";
         }
     } while (choice != '7');
 
