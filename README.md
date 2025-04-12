@@ -43,5 +43,5 @@ _A fullscreen login interface with focus-friendly design._
 ### 📥 Clone the Repo
 
 ```bash
-git clone https://github.com/your-username/shopping-application.git
+git clone https://github.com/Abdul-Rafay2005/online_shopping_store.git
 cd shopping-application
