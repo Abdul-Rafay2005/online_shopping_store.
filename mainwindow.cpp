@@ -8,26 +8,37 @@
 #include <QMenuBar>
 #include <QToolButton>
 #include <QStyle>
+#include <QScrollArea>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    // Make window full screen
     this->showFullScreen();
-
-    // Remove default menu bar
     setMenuBar(nullptr);
 
-    // Create central widget
-    QWidget *central = new QWidget(this);
-    setCentralWidget(central);
-    central->setStyleSheet("background-color: snow;");
+    stackedWidget = new QStackedWidget(this);
+    setCentralWidget(stackedWidget);
 
-    // === Window Controls (Top-Right) ===
+    createHomePage();
+    createShippingPage();
+    createCartPage();
+
+    showHomePage();
+}
+
+void MainWindow::createHomePage() {
+    QScrollArea *scrollArea = new QScrollArea();
+    QWidget *homePage = new QWidget();
+    homePage->setStyleSheet("background-color: #f0f0f0;");
+    scrollArea->setWidget(homePage);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(homePage);
+
     QWidget *windowControls = new QWidget();
     QHBoxLayout *controlsLayout = new QHBoxLayout(windowControls);
     controlsLayout->setContentsMargins(0, 0, 0, 0);
     controlsLayout->setSpacing(0);
 
-    // Minimize button
     QToolButton *minimizeButton = new QToolButton();
     minimizeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMinButton));
     minimizeButton->setFixedSize(30, 30);
@@ -35,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
                                   "QToolButton:hover { background-color: #e0e0e0; }");
     connect(minimizeButton, &QToolButton::clicked, this, &QMainWindow::showMinimized);
 
-    // Maximize/Restore button
     QToolButton *maximizeButton = new QToolButton();
     maximizeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMaxButton));
     maximizeButton->setFixedSize(30, 30);
@@ -49,7 +59,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         }
     });
 
-    // Close button
     QToolButton *closeButton = new QToolButton();
     closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     closeButton->setFixedSize(30, 30);
@@ -61,7 +70,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     controlsLayout->addWidget(maximizeButton);
     controlsLayout->addWidget(closeButton);
 
-    // === Search Bar (Visible Box with White Text) ===
     QLineEdit *searchBar = new QLineEdit();
     searchBar->setPlaceholderText("Search for products...");
     searchBar->setFixedHeight(50);
@@ -69,31 +77,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         "QLineEdit {"
         "  font-size: 20px;"
         "  padding: 10px;"
-        "  border: 2px solid #2d89ef;"  // Blue border
+        "  border: 2px solid #2d89ef;"
         "  border-radius: 8px;"
-        "  background-color: white;"    // White background
-        "  color: black;"               // Black placeholder text
-        "}"
-        "QLineEdit:focus {"
-        "  border: 2px solid #1e5dbf;" // Darker blue when focused
-        "}"
-        "QLineEdit QAbstractItemView {" // Style for dropdown suggestions
-        "  background: white;"
+        "  background-color: white;"
         "  color: black;"
         "}"
-        );
+        "QLineEdit:focus {"
+        "  border: 2px solid #1e5dbf;"
+        "}");
 
-    // === Top Bar Layout (Search + Window Controls) ===
     QHBoxLayout *topBarLayout = new QHBoxLayout();
-    topBarLayout->addWidget(searchBar, 1); // Takes remaining space
+    topBarLayout->addWidget(searchBar, 1);
     topBarLayout->addWidget(windowControls);
 
-    // === Bottom Buttons ===
     QPushButton *homeButton = new QPushButton("Home");
     QPushButton *shippingButton = new QPushButton("Shipping");
     QPushButton *cartButton = new QPushButton("Cart");
 
-    // Style all buttons consistently
     QList<QPushButton*> buttons = {homeButton, shippingButton, cartButton};
     for (QPushButton *btn : buttons) {
         btn->setFixedSize(150, 50);
@@ -104,21 +104,112 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
             "  color: white;"
             "  border-radius: 8px;"
             "}"
-            "QPushButton:hover { background-color: #1e5dbf; }"
-            );
+            "QPushButton:hover { background-color: #1e5dbf; }");
     }
 
-    // Bottom layout with specific button positions
-    QHBoxLayout *bottomLayout = new QHBoxLayout();
-    bottomLayout->addWidget(homeButton);               // Home on far left
-    bottomLayout->addStretch();                       // Space between
-    bottomLayout->addWidget(shippingButton);          // Shipping in middle
-    bottomLayout->addStretch();                       // Space between
-    bottomLayout->addWidget(cartButton);              // Cart on far right (replaces quit)
+    connect(homeButton, &QPushButton::clicked, this, &MainWindow::showHomePage);
+    connect(shippingButton, &QPushButton::clicked, this, &MainWindow::showShippingPage);
+    connect(cartButton, &QPushButton::clicked, this, &MainWindow::showCartPage);
 
-    // === Main Layout ===
-    QVBoxLayout *mainLayout = new QVBoxLayout(central);
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    bottomLayout->addWidget(homeButton);
+    bottomLayout->addStretch();
+    bottomLayout->addWidget(shippingButton);
+    bottomLayout->addStretch();
+    bottomLayout->addWidget(cartButton);
+
+    QLabel *homeContent = new QLabel("HOME PAGE CONTENT");
+    homeContent->setAlignment(Qt::AlignCenter);
+    homeContent->setStyleSheet("font-size: 36px;");
+    homeContent->setMinimumHeight(1200);
+
     mainLayout->addLayout(topBarLayout);
-    mainLayout->addStretch(); // Placeholder for central content
+    mainLayout->addWidget(homeContent);
     mainLayout->addLayout(bottomLayout);
+
+    stackedWidget->addWidget(scrollArea);
+}
+
+void MainWindow::createShippingPage() {
+    QScrollArea *scrollArea = new QScrollArea();
+    QWidget *shippingPage = new QWidget();
+    shippingPage->setStyleSheet("background-color: #f0f0f0;");
+    scrollArea->setWidget(shippingPage);
+    scrollArea->setWidgetResizable(true);
+
+    QVBoxLayout *layout = new QVBoxLayout(shippingPage);
+
+    QToolButton *backButton = new QToolButton();
+    backButton->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
+    backButton->setToolTip("Back to Home");
+    backButton->setIconSize(QSize(30, 30));
+    backButton->setStyleSheet(
+        "QToolButton {"
+        "  background: transparent;"
+        "  border: none;"
+        "  margin: 10px;"
+        "}"
+        "QToolButton:hover {"
+        "  background-color: #dddddd;"
+        "  border-radius: 6px;"
+        "}");
+    connect(backButton, &QToolButton::clicked, this, &MainWindow::showHomePage);
+
+    QLabel *shippingLabel = new QLabel("SHIPPING PAGE CONTENT");
+    shippingLabel->setAlignment(Qt::AlignCenter);
+    shippingLabel->setStyleSheet("font-size: 36px;");
+    shippingLabel->setMinimumHeight(1200);
+
+    layout->addWidget(backButton, 0, Qt::AlignLeft);
+    layout->addWidget(shippingLabel);
+
+    stackedWidget->addWidget(scrollArea);
+}
+
+void MainWindow::createCartPage() {
+    QScrollArea *scrollArea = new QScrollArea();
+    QWidget *cartPage = new QWidget();
+    cartPage->setStyleSheet("background-color: #f0f0f0;");
+    scrollArea->setWidget(cartPage);
+    scrollArea->setWidgetResizable(true);
+
+    QVBoxLayout *layout = new QVBoxLayout(cartPage);
+
+    QToolButton *backButton = new QToolButton();
+    backButton->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
+    backButton->setToolTip("Back to Home");
+    backButton->setIconSize(QSize(30, 30));
+    backButton->setStyleSheet(
+        "QToolButton {"
+        "  background: transparent;"
+        "  border: none;"
+        "  margin: 10px;"
+        "}"
+        "QToolButton:hover {"
+        "  background-color: #dddddd;"
+        "  border-radius: 6px;"
+        "}");
+    connect(backButton, &QToolButton::clicked, this, &MainWindow::showHomePage);
+
+    QLabel *cartLabel = new QLabel("CART PAGE CONTENT");
+    cartLabel->setAlignment(Qt::AlignCenter);
+    cartLabel->setStyleSheet("font-size: 36px;");
+    cartLabel->setMinimumHeight(1200);
+
+    layout->addWidget(backButton, 0, Qt::AlignLeft);
+    layout->addWidget(cartLabel);
+
+    stackedWidget->addWidget(scrollArea);
+}
+
+void MainWindow::showHomePage() {
+    stackedWidget->setCurrentIndex(0);
+}
+
+void MainWindow::showShippingPage() {
+    stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::showCartPage() {
+    stackedWidget->setCurrentIndex(2);
 }
