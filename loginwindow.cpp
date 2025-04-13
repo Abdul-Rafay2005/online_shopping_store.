@@ -93,8 +93,21 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
         "QPushButton:hover { background-color: #1d263e; }"
         );
 
+    // Styling the checkbox and text
     agreeCheckBox = new QCheckBox("I agree to the ");
-    agreeCheckBox->setStyleSheet("font-size: 13px; color: #555; padding-left: 5px;");
+    agreeCheckBox->setStyleSheet(
+        "QCheckBox { font-size: 13px; color: black; }"
+        "QCheckBox::indicator {"
+        "  width: 18px; height: 18px; "
+        "  border: 2px solid #2e3a59; "
+        "  border-radius: 4px; "
+        "  background-color: white;"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "  background-color: #2e3a59;"
+        "  border: 2px solid #2e3a59;"
+        "}"
+        );
 
     QLabel *termsLink = new QLabel("<a href='#'>Terms & Conditions</a>");
     termsLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
