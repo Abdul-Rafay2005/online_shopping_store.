@@ -46,7 +46,6 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
         "QPushButton:hover { background-color: #1e5dbf; }"
         );
 
-    // Terms and conditions
     QLabel *termsLabel = new QLabel("Terms & Conditions:");
     termsLabel->setStyleSheet("font-weight: bold; font-size: 16px; color: #222;");
 
@@ -59,18 +58,15 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     termPoints->setStyleSheet("font-size: 14px; color: #444;");
     termPoints->setWordWrap(true);
 
-    // Checkbox with initial black border
     agreeCheckBox = new QCheckBox("I agree to the Terms and Conditions");
     agreeCheckBox->setStyleSheet(
         "QCheckBox {"
         "  font-size: 14px;"
         "  color: #222;"
-        "  border: 1px solid black;"  // Initially black border
+        "  border: 1px solid black;"
         "  padding: 5px;"
         "}"
         );
-
-    // Change border color when checked
     connect(agreeCheckBox, &QCheckBox::toggled, this, &LoginWindow::onAgreementChanged);
 
     QPushButton *quitButton = new QPushButton("Quit");
@@ -92,13 +88,10 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     formLayout->addWidget(passLabel);
     formLayout->addWidget(passInput);
     formLayout->addWidget(loginButton, 0, Qt::AlignHCenter);
-
-    // Add terms and checkbox below login
     formLayout->addSpacing(20);
     formLayout->addWidget(termsLabel);
     formLayout->addWidget(termPoints);
     formLayout->addWidget(agreeCheckBox);
-
     formLayout->setSpacing(15);
 
     QVBoxLayout *centerLayout = new QVBoxLayout();
@@ -146,8 +139,12 @@ bool LoginWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void LoginWindow::handleLogin() {
     if (!agreeCheckBox->isChecked()) {
-        // Show error message in black text color
-        QMessageBox::warning(this, "Terms Required", "You must agree to the Terms and Conditions to login.", QMessageBox::Ok);
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Terms Required");
+        msgBox.setText("You must agree to the Terms and Conditions to login.");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStyleSheet("QLabel { color: white; } QMessageBox { background-color: black; } QPushButton { min-width: 80px; }");
+        msgBox.exec();
         return;
     }
 
@@ -159,7 +156,13 @@ void LoginWindow::handleLogin() {
         mainWin->show();
         this->close();
     } else {
-        QMessageBox::warning(this, "Error", "Invalid username or password!", QMessageBox::Ok);
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Error");
+        msgBox.setText("Invalid username or password!");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setStyleSheet("QLabel { color: white; } QMessageBox { background-color: black; } QPushButton { min-width: 80px; }");
+        msgBox.exec();
+
         userInput->clear();
         passInput->clear();
         userInput->setFocus();
@@ -168,22 +171,20 @@ void LoginWindow::handleLogin() {
 
 void LoginWindow::onAgreementChanged(bool checked) {
     if (checked) {
-        // Border turns blue when checked (agreed)
         agreeCheckBox->setStyleSheet(
             "QCheckBox {"
             "  font-size: 14px;"
             "  color: #222;"
-            "  border: 1px solid #2d89ef;"  // Blue border when checked
+            "  border: 1px solid #2d89ef;"
             "  padding: 5px;"
             "}"
             );
     } else {
-        // Reset to default state (black border) when unchecked
         agreeCheckBox->setStyleSheet(
             "QCheckBox {"
             "  font-size: 14px;"
             "  color: #222;"
-            "  border: 1px solid black;"  // Black border initially and when unchecked
+            "  border: 1px solid black;"
             "  padding: 5px;"
             "}"
             );
