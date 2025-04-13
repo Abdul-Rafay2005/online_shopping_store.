@@ -9,6 +9,8 @@
 #include <QToolButton>
 #include <QStyle>
 #include <QScrollArea>
+#include <QFormLayout>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->showFullScreen();
@@ -90,11 +92,10 @@ void MainWindow::createHomePage() {
     topBarLayout->addWidget(searchBar, 1);
     topBarLayout->addWidget(windowControls);
 
-    QPushButton *homeButton = new QPushButton("Home");
     QPushButton *shippingButton = new QPushButton("Shipping");
     QPushButton *cartButton = new QPushButton("Cart");
 
-    QList<QPushButton*> buttons = {homeButton, shippingButton, cartButton};
+    QList<QPushButton*> buttons = {shippingButton, cartButton};
     for (QPushButton *btn : buttons) {
         btn->setFixedSize(150, 50);
         btn->setStyleSheet(
@@ -107,16 +108,15 @@ void MainWindow::createHomePage() {
             "QPushButton:hover { background-color: #1e5dbf; }");
     }
 
-    connect(homeButton, &QPushButton::clicked, this, &MainWindow::showHomePage);
     connect(shippingButton, &QPushButton::clicked, this, &MainWindow::showShippingPage);
     connect(cartButton, &QPushButton::clicked, this, &MainWindow::showCartPage);
 
     QHBoxLayout *bottomLayout = new QHBoxLayout();
-    bottomLayout->addWidget(homeButton);
     bottomLayout->addStretch();
     bottomLayout->addWidget(shippingButton);
-    bottomLayout->addStretch();
+    bottomLayout->addSpacing(40);
     bottomLayout->addWidget(cartButton);
+    bottomLayout->addStretch();
 
     QLabel *homeContent = new QLabel("HOME PAGE CONTENT");
     homeContent->setAlignment(Qt::AlignCenter);
@@ -154,14 +154,57 @@ void MainWindow::createShippingPage() {
         "  border-radius: 6px;"
         "}");
     connect(backButton, &QToolButton::clicked, this, &MainWindow::showHomePage);
-
-    QLabel *shippingLabel = new QLabel("SHIPPING PAGE CONTENT");
-    shippingLabel->setAlignment(Qt::AlignCenter);
-    shippingLabel->setStyleSheet("font-size: 36px;");
-    shippingLabel->setMinimumHeight(1200);
-
     layout->addWidget(backButton, 0, Qt::AlignLeft);
+
+    QLabel *shippingLabel = new QLabel("SHIPPING DETAILS");
+    shippingLabel->setAlignment(Qt::AlignCenter);
+    shippingLabel->setStyleSheet("font-size: 32px; margin: 20px; color: black;");
     layout->addWidget(shippingLabel);
+
+    QFormLayout *formLayout = new QFormLayout();
+
+    nameInput = new QLineEdit();
+    addressInput = new QLineEdit();
+    phoneInput = new QLineEdit();
+
+    nameInput->setPlaceholderText("Enter your full name");
+    addressInput->setPlaceholderText("Enter your shipping address");
+    phoneInput->setPlaceholderText("Enter your phone number");
+
+    QList<QLineEdit*> inputs = {nameInput, addressInput, phoneInput};
+    for (QLineEdit *input : inputs) {
+        input->setStyleSheet(
+            "QLineEdit {"
+            "  font-size: 18px;"
+            "  padding: 8px;"
+            "  border: 2px solid #ccc;"
+            "  border-radius: 6px;"
+            "  color: black;"
+            "  background-color: white;"
+            "}"
+            "QLineEdit:focus { border: 2px solid #2d89ef; }");
+    }
+
+    formLayout->addRow(new QLabel("<font color='black'>Name:</font>"), nameInput);
+    formLayout->addRow(new QLabel("<font color='black'>Address:</font>"), addressInput);
+    formLayout->addRow(new QLabel("<font color='black'>Phone:</font>"), phoneInput);
+    layout->addLayout(formLayout);
+
+    QPushButton *submitButton = new QPushButton("Submit Order");
+    submitButton->setFixedSize(200, 50);
+    submitButton->setStyleSheet(
+        "QPushButton {"
+        "  font-size: 18px;"
+        "  background-color: #2d89ef;"
+        "  color: white;"
+        "  border-radius: 8px;"
+        "}"
+        "QPushButton:hover { background-color: #1e5dbf; }");
+
+    connect(submitButton, &QPushButton::clicked, this, &MainWindow::placeOrder);
+
+    layout->addSpacing(30);
+    layout->addWidget(submitButton, 0, Qt::AlignCenter);
 
     stackedWidget->addWidget(scrollArea);
 }
@@ -212,4 +255,20 @@ void MainWindow::showShippingPage() {
 
 void MainWindow::showCartPage() {
     stackedWidget->setCurrentIndex(2);
+}
+
+void MainWindow::placeOrder() {
+    QString name = nameInput->text();
+    QString address = addressInput->text();
+    QString phone = phoneInput->text();
+
+    if (name.isEmpty() || address.isEmpty() || phone.isEmpty()) {
+        QMessageBox::warning(this, "Missing Info", "Please fill in all the fields.");
+    } else {
+        QString orderSummary = QString("Order placed!\n\nName: %1\nAddress: %2\nPhone: %3")
+        .arg(name).arg(address).arg(phone);
+
+        QMessageBox::information(this, "Order Confirmation", orderSummary);
+        showHomePage();
+    }
 }
