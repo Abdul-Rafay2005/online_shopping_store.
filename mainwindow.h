@@ -21,7 +21,13 @@ private slots:
     void showHomePage();
     void showShippingPage();
     void showCartPage();
-    void placeOrder();  // NEW: Slot for handling order button
+    void placeOrder();
+
+private:
+    void createCategoryPage(const QString &name);
+    void showCategoryPage(const QString &name);
+    QMap<QString, QWidget*> categoryPages;
+
 
 private:
     // UI elements
