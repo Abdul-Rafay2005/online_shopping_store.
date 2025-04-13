@@ -3,12 +3,12 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QLineEdit>      // Add this for QLineEdit
-#include <QPushButton>    // Add this for QPushButton
-#include <QLabel>         // Add this for QLabel
-#include <QScrollArea>    // Add this for QScrollArea
-#include <QHBoxLayout>    // Add this for QHBoxLayout
-#include <QVBoxLayout>    // Add this for QVBoxLayout
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QScrollArea>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 class MainWindow : public QMainWindow
 {
@@ -21,6 +21,7 @@ private slots:
     void showHomePage();
     void showShippingPage();
     void showCartPage();
+    void placeOrder();  // NEW: Slot for handling order button
 
 private:
     // UI elements
@@ -30,6 +31,12 @@ private:
     QPushButton *cartButton;
     QPushButton *viewCartButton;
     QPushButton *checkoutButton;
+
+    // NEW: Shipping input fields
+    QLineEdit *nameInput;
+    QLineEdit *addressInput;
+    QLineEdit *phoneInput;
+    QPushButton *orderButton;
 
     // Page navigation
     QStackedWidget *stackedWidget;
