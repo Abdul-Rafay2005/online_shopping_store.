@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QCheckBox>
 
 class LoginWindow : public QWidget
 {
@@ -14,10 +15,13 @@ public:
 
 private slots:
     void handleLogin();
+    void onAgreementChanged(bool checked);
 
 private:
     QLineEdit *userInput;
     QLineEdit *passInput;
+    QCheckBox *agreeCheckBox;
+
 };
 
 #endif // LOGINWINDOW_H
