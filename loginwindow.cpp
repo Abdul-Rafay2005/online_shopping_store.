@@ -6,68 +6,79 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QKeyEvent>
-#include <QCheckBox>
+#include <QGraphicsDropShadowEffect>
 
 LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
-    setWindowTitle("Login");
-    showFullScreen();
-    setStyleSheet("background-color: #f0f0f0;");
+    setWindowTitle("Secure Login");
+    resize(800, 500);
+    setStyleSheet("background-color: #eaeef1;");
 
-    QLabel *titleLabel = new QLabel("HAPPY SHOPPING");
-    titleLabel->setStyleSheet("color: #333; font-size: 36px; font-weight: bold;");
-    titleLabel->setAlignment(Qt::AlignCenter);
+    // Left panel - Welcome side
+    QWidget *welcomeWidget = new QWidget();
+    welcomeWidget->setStyleSheet("background-color: #2e3a59; border-top-left-radius: 20px; border-bottom-left-radius: 20px;");
 
+    QLabel *welcomeText = new QLabel("Welcome Back!");
+    welcomeText->setStyleSheet("color: white; font-size: 32px; font-weight: bold;");
+    welcomeText->setAlignment(Qt::AlignCenter);
+
+    QLabel *descText = new QLabel("Login to continue to your dashboard.");
+    descText->setStyleSheet("color: #ddd; font-size: 16px;");
+    descText->setAlignment(Qt::AlignCenter);
+    descText->setWordWrap(true);
+
+    QVBoxLayout *welcomeLayout = new QVBoxLayout(welcomeWidget);
+    welcomeLayout->setContentsMargins(20, 20, 20, 20);  // Fixed deprecated setMargin
+    welcomeLayout->addStretch();
+    welcomeLayout->addWidget(welcomeText);
+    welcomeLayout->addSpacing(10);
+    welcomeLayout->addWidget(descText);
+    welcomeLayout->addStretch();
+
+    // Right panel - Form side
     QLabel *userLabel = new QLabel("Username:");
     QLabel *passLabel = new QLabel("Password:");
-    userLabel->setStyleSheet("color: #333; font-size: 18px;");
-    passLabel->setStyleSheet("color: #333; font-size: 18px;");
+    userLabel->setStyleSheet("font-size: 16px; color: #333;");
+    passLabel->setStyleSheet("font-size: 16px; color: #333;");
 
     userInput = new QLineEdit();
     passInput = new QLineEdit();
     passInput->setEchoMode(QLineEdit::Password);
     userInput->setMinimumHeight(40);
     passInput->setMinimumHeight(40);
-    userInput->setStyleSheet("color: black; background: white; font-size: 16px; border-radius: 5px; padding: 5px; border: 1px solid #ccc;");
-    passInput->setStyleSheet("color: black; background: white; font-size: 16px; border-radius: 5px; padding: 5px; border: 1px solid #ccc;");
+    userInput->setStyleSheet("border-radius: 10px; padding: 8px; font-size: 14px; background-color: #ffffff; border: 1px solid #ccc;");
+    passInput->setStyleSheet("border-radius: 10px; padding: 8px; font-size: 14px; background-color: #ffffff; border: 1px solid #ccc;");
 
     userInput->setFocus();
     userInput->installEventFilter(this);
     passInput->installEventFilter(this);
 
     QPushButton *loginButton = new QPushButton("Login");
-    loginButton->setFixedSize(120, 40);
+    loginButton->setFixedHeight(40);
     loginButton->setStyleSheet(
         "QPushButton {"
-        "  background-color: #2d89ef;"
+        "  background-color: #2e3a59;"
         "  color: white;"
         "  font-size: 16px;"
-        "  border-radius: 5px;"
+        "  border-radius: 10px;"
         "}"
-        "QPushButton:hover { background-color: #1e5dbf; }"
+        "QPushButton:hover { background-color: #1d263e; }"
         );
-
-    QLabel *termsLabel = new QLabel("Terms & Conditions:");
-    termsLabel->setStyleSheet("font-weight: bold; font-size: 16px; color: #222;");
-
-    QLabel *termPoints = new QLabel(
-        "• All user activities are monitored.\n"
-        "• No unauthorized access allowed.\n"
-        "• Admin reserves the right to revoke access.\n"
-        "• Login information must be kept secure."
-        );
-    termPoints->setStyleSheet("font-size: 14px; color: #444;");
-    termPoints->setWordWrap(true);
 
     agreeCheckBox = new QCheckBox("I agree to the Terms and Conditions");
-    agreeCheckBox->setStyleSheet(
-        "QCheckBox {"
-        "  font-size: 14px;"
-        "  color: #222;"
-        "  border: 1px solid black;"
-        "  padding: 5px;"
-        "}"
-        );
+    agreeCheckBox->setStyleSheet("font-size: 13px; color: #555; padding-left: 5px;");
     connect(agreeCheckBox, &QCheckBox::toggled, this, &LoginWindow::onAgreementChanged);
+
+    QLabel *termsLabel = new QLabel("Terms & Conditions:");
+    termsLabel->setStyleSheet("font-weight: bold; font-size: 14px; color: #2e3a59;");
+    QLabel *termPoints = new QLabel(
+        "• Your activities may be monitored.\n"
+        "• Unauthorized access is strictly prohibited.\n"
+        "• Keep your credentials confidential.\n"
+        "• Admin may revoke access at any time.\n"
+        "• Respect the privacy and rights of others."
+        );
+    termPoints->setStyleSheet("font-size: 13px; color: #444;");
+    termPoints->setWordWrap(true);
 
     QPushButton *quitButton = new QPushButton("Quit");
     quitButton->setFixedSize(80, 30);
@@ -83,40 +94,29 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     connect(quitButton, &QPushButton::clicked, this, &QWidget::close);
 
     QVBoxLayout *formLayout = new QVBoxLayout();
+    formLayout->setContentsMargins(30, 30, 30, 30);  // Fixed deprecated setMargin
     formLayout->addWidget(userLabel);
     formLayout->addWidget(userInput);
     formLayout->addWidget(passLabel);
     formLayout->addWidget(passInput);
-    formLayout->addWidget(loginButton, 0, Qt::AlignHCenter);
-    formLayout->addSpacing(20);
+    formLayout->addSpacing(10);
+    formLayout->addWidget(loginButton);
+    formLayout->addWidget(agreeCheckBox);
+    formLayout->addSpacing(10);
     formLayout->addWidget(termsLabel);
     formLayout->addWidget(termPoints);
-    formLayout->addWidget(agreeCheckBox);
-    formLayout->setSpacing(15);
+    formLayout->addSpacing(10);
+    formLayout->addWidget(quitButton, 0, Qt::AlignRight);
 
-    QVBoxLayout *centerLayout = new QVBoxLayout();
-    centerLayout->addWidget(titleLabel);
-    centerLayout->addSpacing(30);
-    centerLayout->addLayout(formLayout);
-    centerLayout->setAlignment(Qt::AlignCenter);
+    QWidget *formWidget = new QWidget();
+    formWidget->setLayout(formLayout);
+    formWidget->setStyleSheet("background-color: #f6f7fa; border-top-right-radius: 20px; border-bottom-right-radius: 20px;");
 
-    QLabel *namesLabel = new QLabel("Developed by: Abdul Rafay, Syed Nabeel, Adnan Anwar");
-    namesLabel->setStyleSheet("color: #555; font-size: 14px;");
-    namesLabel->setAlignment(Qt::AlignLeft);
-
-    QHBoxLayout *namesLayout = new QHBoxLayout();
-    namesLayout->addWidget(namesLabel);
-    namesLayout->addStretch();
-
-    QHBoxLayout *bottomLayout = new QHBoxLayout();
-    bottomLayout->addStretch();
-    bottomLayout->addWidget(quitButton);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addLayout(centerLayout);
-    mainLayout->addStretch();
-    mainLayout->addLayout(namesLayout);
-    mainLayout->addLayout(bottomLayout);
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);  // Fixed deprecated setMargin
+    mainLayout->addWidget(welcomeWidget, 2);
+    mainLayout->addWidget(formWidget, 3);
 
     connect(loginButton, &QPushButton::clicked, this, &LoginWindow::handleLogin);
 }
@@ -139,12 +139,7 @@ bool LoginWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void LoginWindow::handleLogin() {
     if (!agreeCheckBox->isChecked()) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Terms Required");
-        msgBox.setText("You must agree to the Terms and Conditions to login.");
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setStyleSheet("QLabel { color: white; } QMessageBox { background-color: black; } QPushButton { min-width: 80px; }");
-        msgBox.exec();
+        QMessageBox::warning(this, "Terms Required", "You must agree to the Terms and Conditions to login.");
         return;
     }
 
@@ -156,13 +151,7 @@ void LoginWindow::handleLogin() {
         mainWin->show();
         this->close();
     } else {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Error");
-        msgBox.setText("Invalid username or password!");
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setStyleSheet("QLabel { color: white; } QMessageBox { background-color: black; } QPushButton { min-width: 80px; }");
-        msgBox.exec();
-
+        QMessageBox::warning(this, "Error", "Invalid username or password!");
         userInput->clear();
         passInput->clear();
         userInput->setFocus();
@@ -170,23 +159,8 @@ void LoginWindow::handleLogin() {
 }
 
 void LoginWindow::onAgreementChanged(bool checked) {
-    if (checked) {
-        agreeCheckBox->setStyleSheet(
-            "QCheckBox {"
-            "  font-size: 14px;"
-            "  color: #222;"
-            "  border: 1px solid #2d89ef;"
-            "  padding: 5px;"
-            "}"
-            );
-    } else {
-        agreeCheckBox->setStyleSheet(
-            "QCheckBox {"
-            "  font-size: 14px;"
-            "  color: #222;"
-            "  border: 1px solid black;"
-            "  padding: 5px;"
-            "}"
-            );
-    }
+    agreeCheckBox->setStyleSheet(
+        QString("font-size: 13px; color: %1; padding-left: 5px;")
+            .arg(checked ? "#2e3a59" : "#555")
+        );
 }
