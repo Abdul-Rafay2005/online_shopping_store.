@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QCheckBox>
 
 LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     setWindowTitle("Login");
@@ -45,6 +46,33 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
         "QPushButton:hover { background-color: #1e5dbf; }"
         );
 
+    // Terms and conditions
+    QLabel *termsLabel = new QLabel("Terms & Conditions:");
+    termsLabel->setStyleSheet("font-weight: bold; font-size: 16px; color: #222;");
+
+    QLabel *termPoints = new QLabel(
+        "• All user activities are monitored.\n"
+        "• No unauthorized access allowed.\n"
+        "• Admin reserves the right to revoke access.\n"
+        "• Login information must be kept secure."
+        );
+    termPoints->setStyleSheet("font-size: 14px; color: #444;");
+    termPoints->setWordWrap(true);
+
+    // Checkbox with initial black border
+    agreeCheckBox = new QCheckBox("I agree to the Terms and Conditions");
+    agreeCheckBox->setStyleSheet(
+        "QCheckBox {"
+        "  font-size: 14px;"
+        "  color: #222;"
+        "  border: 1px solid black;"  // Initially black border
+        "  padding: 5px;"
+        "}"
+        );
+
+    // Change border color when checked
+    connect(agreeCheckBox, &QCheckBox::toggled, this, &LoginWindow::onAgreementChanged);
+
     QPushButton *quitButton = new QPushButton("Quit");
     quitButton->setFixedSize(80, 30);
     quitButton->setStyleSheet(
@@ -64,6 +92,13 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     formLayout->addWidget(passLabel);
     formLayout->addWidget(passInput);
     formLayout->addWidget(loginButton, 0, Qt::AlignHCenter);
+
+    // Add terms and checkbox below login
+    formLayout->addSpacing(20);
+    formLayout->addWidget(termsLabel);
+    formLayout->addWidget(termPoints);
+    formLayout->addWidget(agreeCheckBox);
+
     formLayout->setSpacing(15);
 
     QVBoxLayout *centerLayout = new QVBoxLayout();
@@ -72,6 +107,14 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     centerLayout->addLayout(formLayout);
     centerLayout->setAlignment(Qt::AlignCenter);
 
+    QLabel *namesLabel = new QLabel("Developed by: Abdul Rafay, Syed Nabeel, Adnan Anwar");
+    namesLabel->setStyleSheet("color: #555; font-size: 14px;");
+    namesLabel->setAlignment(Qt::AlignLeft);
+
+    QHBoxLayout *namesLayout = new QHBoxLayout();
+    namesLayout->addWidget(namesLabel);
+    namesLayout->addStretch();
+
     QHBoxLayout *bottomLayout = new QHBoxLayout();
     bottomLayout->addStretch();
     bottomLayout->addWidget(quitButton);
@@ -79,6 +122,7 @@ LoginWindow::LoginWindow(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(centerLayout);
     mainLayout->addStretch();
+    mainLayout->addLayout(namesLayout);
     mainLayout->addLayout(bottomLayout);
 
     connect(loginButton, &QPushButton::clicked, this, &LoginWindow::handleLogin);
@@ -101,6 +145,12 @@ bool LoginWindow::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void LoginWindow::handleLogin() {
+    if (!agreeCheckBox->isChecked()) {
+        // Show error message in black text color
+        QMessageBox::warning(this, "Terms Required", "You must agree to the Terms and Conditions to login.", QMessageBox::Ok);
+        return;
+    }
+
     QString username = userInput->text();
     QString password = passInput->text();
 
@@ -109,9 +159,33 @@ void LoginWindow::handleLogin() {
         mainWin->show();
         this->close();
     } else {
-        QMessageBox::warning(this, "Error", "Invalid username or password!");
+        QMessageBox::warning(this, "Error", "Invalid username or password!", QMessageBox::Ok);
         userInput->clear();
         passInput->clear();
         userInput->setFocus();
+    }
+}
+
+void LoginWindow::onAgreementChanged(bool checked) {
+    if (checked) {
+        // Border turns blue when checked (agreed)
+        agreeCheckBox->setStyleSheet(
+            "QCheckBox {"
+            "  font-size: 14px;"
+            "  color: #222;"
+            "  border: 1px solid #2d89ef;"  // Blue border when checked
+            "  padding: 5px;"
+            "}"
+            );
+    } else {
+        // Reset to default state (black border) when unchecked
+        agreeCheckBox->setStyleSheet(
+            "QCheckBox {"
+            "  font-size: 14px;"
+            "  color: #222;"
+            "  border: 1px solid black;"  // Black border initially and when unchecked
+            "  padding: 5px;"
+            "}"
+            );
     }
 }
