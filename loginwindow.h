@@ -2,11 +2,11 @@
 #define LOGINWINDOW_H
 
 #include <QWidget>
-#include <QLineEdit>
-#include <QCheckBox>
 
-class LoginWindow : public QWidget
-{
+class QLineEdit;
+class QCheckBox;
+
+class LoginWindow : public QWidget {
     Q_OBJECT
 
 public:
@@ -16,12 +16,12 @@ public:
 private slots:
     void handleLogin();
     void onAgreementChanged(bool checked);
+    void showTermsDialog();  // 🔧 <--- ADD THIS LINE
 
 private:
     QLineEdit *userInput;
     QLineEdit *passInput;
     QCheckBox *agreeCheckBox;
-
 };
 
 #endif // LOGINWINDOW_H
