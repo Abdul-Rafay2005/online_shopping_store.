@@ -9,49 +9,71 @@
 #include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QMap>
+#include <QToolButton>
+#include <QPair>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDateTime>
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 
 private slots:
     void showHomePage();
     void showShippingPage();
     void showCartPage();
     void placeOrder();
+    void showCategoryPage(const QString &category);
+    void addToCart();
+    void viewOrders();
 
 private:
     void createCategoryPage(const QString &name);
-    void showCategoryPage(const QString &name);
+    void createHomePage();
+    void createShippingPage();
+    void createCartPage();
+    void updateCartPage();
+    void saveOrder(const QString &customerName, const QString &address, const QString &phone,
+                   const QList<QPair<QString, double>> &items, double total);
+
+    QStackedWidget *stackedWidget;
     QMap<QString, QWidget*> categoryPages;
+    QWidget *shippingPage;
+    QWidget *cartPage;
+    QVBoxLayout *cartItemsLayout;
 
+    // Cart functionality
+    QList<QPair<QString, double>> cartItems;
+    double cartTotal;
+    QLabel *cartTotalLabel;
 
-private:
-    // UI elements
+    // UI Elements
     QLineEdit *searchBar;
     QPushButton *homeButton;
     QPushButton *shippingButton;
     QPushButton *cartButton;
     QPushButton *viewCartButton;
     QPushButton *checkoutButton;
+    QPushButton *ordersButton;
 
-    // NEW: Shipping input fields
+    // Shipping Input Fields
     QLineEdit *nameInput;
     QLineEdit *addressInput;
     QLineEdit *phoneInput;
     QPushButton *orderButton;
 
-    // Page navigation
-    QStackedWidget *stackedWidget;
-    void createHomePage();
-    void createShippingPage();
-    void createCartPage();
-
     // Window controls
-    void createWindowControls(QWidget *parent);
+    QToolButton *minimizeButton;
+    QToolButton *maximizeButton;
+    QToolButton *closeButton;
 };
 
 #endif // MAINWINDOW_H
