@@ -9,6 +9,7 @@
 #include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QFormLayout>
 #include <QMap>
 #include <QToolButton>
 #include <QPair>
@@ -17,8 +18,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDateTime>
-
-
+#include <QGraphicsDropShadowEffect>
 
 class MainWindow : public QMainWindow
 {
@@ -38,26 +38,35 @@ private slots:
     void viewOrders();
 
 private:
-    void createCategoryPage(const QString &name);
     void createHomePage();
+    void createCategoryPage(const QString &name);
     void createShippingPage();
     void createCartPage();
     void updateCartPage();
     void saveOrder(const QString &customerName, const QString &address, const QString &phone,
                    const QList<QPair<QString, double>> &items, double total);
 
+    // Core layout
     QStackedWidget *stackedWidget;
     QMap<QString, QWidget*> categoryPages;
+
+    // Pages
     QWidget *shippingPage;
     QWidget *cartPage;
-    QVBoxLayout *cartItemsLayout;
+
+    // Shipping form inputs
+    QLineEdit *nameInput;
+    QLineEdit *addressInput;
+    QLineEdit *phoneInput;
+    QPushButton *orderButton;
 
     // Cart functionality
+    QVBoxLayout *cartItemsLayout;
     QList<QPair<QString, double>> cartItems;
     double cartTotal;
     QLabel *cartTotalLabel;
 
-    // UI Elements
+    // Top navigation UI
     QLineEdit *searchBar;
     QPushButton *homeButton;
     QPushButton *shippingButton;
@@ -65,12 +74,6 @@ private:
     QPushButton *viewCartButton;
     QPushButton *checkoutButton;
     QPushButton *ordersButton;
-
-    // Shipping Input Fields
-    QLineEdit *nameInput;
-    QLineEdit *addressInput;
-    QLineEdit *phoneInput;
-    QPushButton *orderButton;
 
     // Window controls
     QToolButton *minimizeButton;
